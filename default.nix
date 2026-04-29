@@ -311,7 +311,7 @@ in {
     };
 
     boot.kernel.sysctl."net.ipv4.ip_forward" =
-      lib.mkIf config.networking.tor.router.enable 1;
+      lib.mkIf config.networking.tor.router.enable (lib.mkDefault 1);
 
   };
 
