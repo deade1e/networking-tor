@@ -18,7 +18,10 @@ inputs = {
 
 ```nix
 imports = [
-  (builtins.fetchTarball "https://github.com/deade1e/networking-tor/archive/main.tar.gz")
+  (builtins.fetchTarball {
+    url = "https://github.com/deade1e/networking-tor/archive/main.tar.gz";
+    sha256 = lib.fakeHash; # Change this with "sha256:..."
+  })
 ];
 ```
 
