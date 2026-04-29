@@ -44,13 +44,13 @@ in {
         description = "The virtual address space used by Tor";
       };
 
-      natPrio = lib.mkOption {
+      nat-priority = lib.mkOption {
         type = lib.types.int;
         default = -100;
         description = "nftables NAT handling priority";
       };
 
-      filterPrio = lib.mkOption {
+      filter-priority = lib.mkOption {
         type = lib.types.int;
         default = 0;
         description = "nftables filter handling priority";
@@ -195,7 +195,7 @@ in {
 
           chain tor_nat_output {
             type nat hook output priority ${
-              toString config.networking.tor.natPrio
+              toString config.networking.tor.nat-priority
             }
 
             oifname lo return # Do not modify any packet to lo
@@ -224,7 +224,7 @@ in {
 
           chain tor_filter_output {
             type filter hook output priority ${
-              toString config.networking.tor.filterPrio
+              toString config.networking.tor.filter-priority
             }; policy drop;
 
             ct state established,related accept
@@ -268,7 +268,7 @@ in {
 
           chain tor_nat_prerouting {
             type nat hook prerouting priority ${
-              toString config.networking.tor.natPrio
+              toString config.networking.tor.nat-priority
             }
 
             ip daddr @reserved_subnets ip daddr != ${config.networking.tor.VirtualAddrNetworkIPv4} return
@@ -280,7 +280,7 @@ in {
 
           chain tor_filter_forward {
             type filter hook forward priority ${
-              toString config.networking.tor.filterPrio
+              toString config.networking.tor.filter-priority
             }; policy drop
             
             ct state established,related accept
