@@ -108,6 +108,15 @@ in {
           description =
             "Allowed destination addresses that will not be routed through Tor";
         };
+
+        allowedSources = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          example = [ "192.168.1.0/24" ];
+          description =
+            "Allowed source addresses that will not be routed through Tor";
+        };
+
       };
 
     };
@@ -266,12 +275,16 @@ in {
           ${buildSubnetsSet "allowed_destinations"
           config.networking.tor.router.allowedDestinations}
 
+          ${buildSubnetsSet "allowed_sources"
+          config.networking.tor.router.allowedSources}
+
           chain tor_nat_prerouting {
             type nat hook prerouting priority ${
               toString config.networking.tor.nat-priority
             }
 
             ip daddr @reserved_subnets ip daddr != ${config.networking.tor.VirtualAddrNetworkIPv4} return
+            ip saddr @allowed_sources return
             ip daddr @allowed_destinations return
 
             ip protocol udp udp dport 53 redirect to :9053
@@ -286,6 +299,7 @@ in {
             ct state established,related accept
 
             ip daddr @reserved_subnets accept
+            ip saddr @allowed_sources accept
             ip daddr @allowed_destinations accept
 
             # log
