@@ -60,6 +60,19 @@ in {
         enable = lib.mkEnableOption
           "Route all traffic of the current machine through Tor. Does not act as a router for other machines";
 
+        clearnet-proxy = {
+          enable = lib.mkEnableOption
+            "Whether to enable a squid instance that can perform requests without being routed through Tor.";
+
+          port = lib.mkOption {
+            type = lib.types.int;
+            default = 3128;
+            example = 8080;
+            description = "Port used for the squid proxy";
+          };
+
+        };
+
         allowedDestinations = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
@@ -138,11 +151,12 @@ in {
       lib.mkIf config.networking.tor.router.enable [ 9053 ];
 
     services.squid = lib.mkIf config.networking.tor.client.enable {
-      enable = true;
+      enable = config.networking.tor.client.clearnet-proxy.enable;
       proxyAddress = "127.0.0.1";
+      proxyPort = config.networking.tor.client.clearnet-proxy.port;
       extraConfig = ''
         shutdown_lifetime 0 seconds;
-        # dns_v4_first on
+
       '';
     };
 
@@ -191,7 +205,13 @@ in {
             meta mark @allowed_marks return
 
             skuid tor return # Do not modify any tor packets
-            skuid squid return
+
+            ${
+              lib.optionalString
+              (config.networking.tor.client.clearnet-proxy.enable)
+
+              "skuid squid return"
+            }
 
             ip daddr @allowed_destinations return
             # here do we wanna prioritize DNS or allowed_destinations?
@@ -216,7 +236,13 @@ in {
             meta mark @allowed_marks accept
 
             skuid tor accept
-            skuid squid accept
+
+            ${
+              lib.optionalString
+              (config.networking.tor.client.clearnet-proxy.enable)
+
+              "skuid squid accept"
+            }
 
             ip daddr @reserved_subnets accept
             ip daddr @allowed_destinations accept
