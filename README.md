@@ -3,6 +3,11 @@
 A NixOS module that enables the `networking.tor` option to transparently route
 traffic through [Tor](https://www.torproject.org/) using nftables.
 
+## IMPORTANT!
+This work has been proposed as a pull request into nixos: https://github.com/NixOS/nixpkgs/pull/515904
+
+Please review the PR and submit your feedback!
+
 ## Import
 
 ### Flake
